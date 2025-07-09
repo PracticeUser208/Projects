@@ -1,0 +1,305 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/index.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active"><a href="search.html">Search Movie</a></li>
+                <li class="active" id="add"></li>
+                <li class="active" id="allUsers"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div style="margin-top: 2rem; padding: 0px 20px 0px 20px;">
+        <h2>Individual Movie Details</h2>
+        <div class="card" style="background-color:Beige; margin-top: 2rem; padding: 15px">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div id="image"></div>
+                    </div>
+                    <div class="col-sm-8">
+                        <div id="posts"></div>
+                        <div id="rating"></div>
+                        <div class="form-group">
+                            <div id="reviewsection"></div>
+                        </div>
+                        <div id="delete" style="float: right;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Logout
+        $("#Logout").click(function () {
+            window.localStorage.clear();
+            window.location.assign("http://localhost:8085/login.html");
+        });
+
+        // Link Endpoint 9
+        var urlParams = new URLSearchParams(window.location.search);
+        var movieid = urlParams.get('movieid');
+        $("#posts").empty();
+        $.ajax({
+            url: "http://localhost:8084/movie/" + movieid,
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data, textStatus, xhr) {
+                if (data != null) {
+                    var postHtml = "";
+                    postHtml = `
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h3>Movie ID: ${data[0].movieid}</h3>
+                            </div>
+                            <div class="col-sm-6">
+                                <h3>Title: ${data[0].title}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h3>Time: ${data[0].time}</h3>
+                            </div>
+                            <div class="col-sm-6">
+                                <h3>Opening Date: ${data[0].opening_date}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3>Genres: ${data[0].genres}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3>Cast: ${data[0].cast}</h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3>Description: ${data[0].description}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                    $("#posts").append(postHtml);
+                } else {
+                    console.log("Issue in retrieving...");
+                }
+            },
+            error: function (xhr, textStatus, err) {
+                console.log(err);
+            }
+        });
+
+        // Link Endpoint 10
+        $(document).ready(function () {
+            $("#delete").click(function () {
+                var token = localStorage.getItem('token');
+                var urlParams = new URLSearchParams(window.location.search);
+                var movieid = urlParams.get('movieid');
+                $("#posts").empty();
+                $.ajax({
+                    headers: { 'authorization': 'Bearer ' + token },
+                    url: "http://localhost:8084/movie/" + movieid,
+                    type: "DELETE",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (data, textStatus, xhr) {
+                        console.log(data)
+                        window.location.assign("http://localhost:8085/index.html");
+                    },
+                    error: function (xhr, textStatus, err) {
+                        console.log(err);
+                    }
+                });
+                return false;
+            });
+        });
+
+        // Link Endpoint 11
+        $(document).ready(function () {
+            $("#ReviewUpload").click(function () {
+                var token = localStorage.getItem('token');
+                var review = $("#Review").val();
+                var rating = $("#Rating").val();
+                var userid = localStorage.getItem("userInfo");
+                var useridJsonData = JSON.parse(userid);
+                var uploadReview = JSON.stringify({ userid: useridJsonData[0].userid, rating: rating, review: review });
+                $("#posts").empty();
+                $.ajax({
+                    headers: { 'authorization': 'Bearer ' + token },
+                    url: "http://localhost:8084/movie/" + movieid + "/review/",
+                    type: "POST",
+                    data: uploadReview,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (data, textStatus, xhr) {
+                        if (data != null) {
+                            window.location.reload();
+                        } else {
+                            console.log("Issue in uploading...");
+                        }
+                    },
+                    error: function (xhr, textStatus, err) {
+                        console.log(err);
+                        if (err == "Forbidden") {
+                            window.alert("Please re-login!");
+                            localStorage.clear();
+                            window.location.assign("http://localhost:8085/index.html");
+                        } else if (err == "Not Acceptable") {
+                            window.alert("You cannot enter review!");
+                            window.location.reload();
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+
+        // Link Endpoint 12
+        $("#rating").empty();
+        var urlParams = new URLSearchParams(window.location.search);
+        var movieid = urlParams.get('movieid');
+        $.ajax({
+            url: "http://localhost:8084/movie/" + movieid + "/reviews/",
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (reviews, textStatus, xhr) {
+                var allReviews = "";
+                var rating = 0;
+                var allreviews = 0;
+                if (reviews.length != 0) {
+                    allreviews = reviews.length;
+                    var sum = 0;
+                    for (var b = 0; b < reviews.length; b++) {
+                        allReviews += (b + 1) + ". " + reviews[b].review + " (" + reviews[b].username + ")" + "<br/>";
+                        sum += reviews[b].rating;
+                    }
+                    rating = (sum / reviews.length).toFixed(2);
+                }
+                postHtml = `
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h3>Rating: ${rating} out of ${allreviews} review(s)</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h3>Reviews:<br/>${allReviews}</h3>
+                    </div>
+                </div>
+                `
+                $("#rating").append(postHtml);
+            },
+            error: function (xhr, textStatus, err) {
+                postHtml = `
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h3>Rating: 0 out of 0 review(s)</h3>
+                    </div>
+                </div>
+                `
+                $("#rating").append(postHtml);
+            }
+        });
+
+        // Link Endpoint 18
+        $("#image").empty();
+        var urlParams = new URLSearchParams(window.location.search);
+        var movieid = urlParams.get('movieid');
+        $.ajax({
+            url: "http://localhost:8084/movie/upload/",
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (image_path, textStatus, xhr) {
+                if (image_path != null) {
+                    for (var b = 0; b < image_path.length; b++) {
+                        if (movieid == image_path[b].movie_id) {
+                            var image_full_path = "http://localhost:8084" + image_path[b].image_path;
+                            postHtml = `
+                            <img src="${image_full_path}" width="230px" height="350px">
+                            `;
+                            $("#image").append(postHtml);
+                        }
+                    }
+                } else {
+                    console.log("Issue in retrieving...");
+                }
+            },
+            error: function (xhr, textStatus, err) {
+                console.log(err);
+            }
+        })
+
+        // Review Submission
+        var token = localStorage.getItem("token");
+        if (token != null) {
+            var postHtml = "";
+            postHtml = `
+            <label>Rating:</label>
+            <textarea class="form-control" id="Rating" rows="1"></textarea>
+            <form action="viewMovieDetailsRegistered.html">
+                <label>Review:</label>
+                <textarea class="form-control" id="Review" rows="3"></textarea>
+                <input type="button" value="Post Review" id="ReviewUpload">
+            </form>
+            `
+            $("#reviewsection").append(postHtml);
+        }
+
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+
+        // Admin Privileges
+        var userData = localStorage.getItem('userInfo');
+        if (userData != null) {
+            var userJsonData = JSON.parse(userData);
+            var usertype = userJsonData[0].type;
+            if (usertype == "Admin") {
+                var postHtml = "";
+                postHtml = `<a href="addMovieORGenre.html">Add Movie / Genre</a>`
+                $("#add").append(postHtml);
+                postHtml = "";
+                postHtml = `<a href="users.html">View All Users</a>`
+                $("#allUsers").append(postHtml);
+                postHtml = "";
+                postHtml = `<a class="btn btn-primary">Delete</a>`
+                $("#delete").append(postHtml);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/profile.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active" id="addMovie"></li>
+                <li class="active" id="addGenre"></li>
+                <li class="active" id="allUsers"></li>
+                <li class="active" id="Logout"><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="card">
+        <img src="http://localhost:8085/images/user_profile.jpg" id="profilepic" alt="Profile" style="width:100%">
+        <p class="username"> <label>Username: </label>
+            <input type="text" id="username"> </br>
+        </p>
+        <p class="role"><label>Type: </label>
+            <input type="text" id="type"> </br>
+        </p>
+        <p class="email"><label>Email: </label>
+            <input type="text" id="email">
+        </p>
+        <p><span id="msg"></span></p>
+        <a href="#"><i class="fa fa-dribbble"></i></a>
+        <a href="#"><i class="fa fa-twitter"></i></a>
+        <a href="#"><i class="fa fa-linkedin"></i></a>
+        <a href="#"><i class="fa fa-facebook"></i></a>
+        <p><input type="button" id="Update" value="Update Profile" /></p>
+    </div>
+
+    <script>
+        // Display User Info 
+        var allUserInfo = localStorage.getItem("Users");
+        var allUserInfojson = JSON.parse(allUserInfo);
+        if (allUserInfojson == null) {
+            window.location.assign("http://localhost:8085/index.html");
+        }
+        
+        var urlParams = new URLSearchParams(window.location.search);
+        var localuserid = urlParams.get('userid');
+        for (var e = 0; e < allUserInfojson.length; e++) {
+            if (allUserInfojson[e].userid == localuserid) {
+                var username = allUserInfojson[e].username;
+                var useremail = allUserInfojson[e].email;
+                var usertype = allUserInfojson[e].type;
+                var userpic = allUserInfojson[e].pic;
+                document.getElementById("username").value = username;
+                document.getElementById("email").value = useremail;
+                document.getElementById("type").value = usertype;
+            }
+        }
+
+        // Link Endpoint 4
+        $(document).ready(function () {
+            $("#Update").click(function () {
+                var usr = $('#username').val();
+                var email = $('#email').val();
+                var type = $('#type').val();
+                var token = localStorage.getItem('token');
+                var user = localStorage.getItem('userInfo');
+                var userDataInfo = JSON.parse(user);
+                var urlParams = new URLSearchParams(window.location.search);
+                var id = urlParams.get('userid');
+                var reqBody = JSON.stringify({ username: usr, email: email, type: type })
+                $.ajax({
+                    headers: { 'authorization': 'Bearer ' + token },
+                    url: 'http://localhost:8084/users/' + id,
+                    type: 'PUT',
+                    data: reqBody,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    success: function (data, textStatus, xhr) {
+                        if (data != null && data.success) {
+                            $('#msg').html('Record updated successfully!');
+                        } else {
+                            console.log("Error");
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log('Error in Operation');
+                        window.alert("Please re-login!");
+                        localStorage.clear();
+                        window.location.assign("http://localhost:8085/index.html");
+                    }
+                });
+            });
+        });
+
+        // Admin Privileges
+        var usertype = localStorage.getItem('userInfo');
+        var usertypejson = JSON.parse(usertype);
+        var userdatatype = usertypejson[0].type;
+        if (userdatatype == "Admin") {
+            var postHtml = "";
+            postHtml = `<a href="movie.html">Add Movie</a>`
+            $("#addMovie").append(postHtml);
+            postHtml = "";
+            postHtml = `<a href="genre.html">Add Genre</a>`
+            $("#addGenre").append(postHtml);
+            postHtml = "";
+            postHtml = `<a href="users.html">View All Users</a>`
+            $("#allUsers").append(postHtml);
+        }
+
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+
+        // Logout
+        $(document).ready(function () {
+            $("#Logout").click(function () {
+                window.localStorage.clear();
+                window.location.assign("http://localhost:8085/login.html");
+            });
+        });
+    </script>
+</body>
+
+</html>

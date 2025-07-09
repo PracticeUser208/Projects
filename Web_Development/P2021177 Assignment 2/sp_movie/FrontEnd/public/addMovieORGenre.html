@@ -1,0 +1,317 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/profile.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active"><a href="search.html">Search Movie</a></li>
+                <li class="active" id="adminnavaddmovie"></li>
+                <li class="active" id="adminnavusers"></li>
+                <li class="active" id="adminnavprofile"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card" style="height: 350px;">
+                <h2>Add New Genre</h2>
+                <p class="genre"> <label>Genre Name: </label>
+                    <input type="text" id="genre"> </br>
+                </p>
+                <p class="description"><label>Description: </label>
+                    <input type="text" id="gdescription"> </br>
+                </p>
+                <p><input type="button" id="gAdd" value="Add Genre" /></p>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card" style="height: 350px;">
+                <h2>Add New Movie</h2>
+                <p class="titles" style="float: right; padding-right: 15px;"> <label>Title: </label>
+                    <input type="text" id="titles"> </br>
+                </p>
+                <p class="description" style="float: right; padding-right: 15px;"><label>Description: </label>
+                    <input type="text" id="mdescription"> </br>
+                </p>
+                <p class="cast" style="float: right; padding-right: 15px;"><label>Cast: </label>
+                    <input type="text" id="cast">
+                </p>
+                <p class="time" style="float: right; padding-right: 15px;"><label>Time (mins): </label>
+                    <input type="text" id="time">
+                </p>
+                <p class="opening_date" style="float: right; padding-right: 15px;"><label>Opening Date: </label>
+                    <input type="text" id="opening_date">
+                </p>
+                <p class="genre1" style="float: right; padding-right: 15px;"><label>Genres: </label>
+                    <input type="text" id="genres">
+                </p>
+                <p><input type="button" id="mAdd" value="Add Movie" /></p>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card" style="height: 350px;">
+                <h2>Add Image</h2>
+                <p class="titles" style="float: right; padding-right: 15px;"> <label>Movie Title: </label>
+                    <input type="text" id="moviename"> </br>
+                </p>
+                <form enctype="multipart/form-data">
+                    <input type="file" id="myFile" name="filename" accept="image/jpg" style="padding-left: 50px;">
+                </form>
+                <p><input type="button" id="iAdd" value="Add Image" /></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <h3><span id="msg"></span></h3>
+    </div>
+
+    <script>
+        // Admin Privileges
+        var userData = localStorage.getItem('userInfo');
+        var userJsonData = JSON.parse(userData);
+        if (userJsonData != null && userJsonData[0].type == "Admin") {
+            var postHtml = "";
+            postHtml = `<a href="addMovieORGenre.html">Add Movie / Genre</a>`
+            $("#adminnavaddmovie").append(postHtml);
+            postHtml = "";
+            postHtml = `<a href="users.html">View All Users</a>`
+            $("#adminnavusers").append(postHtml);
+            postHtml = "";
+            postHtml = `<a href="profile.html">Profile</a>`
+            $("#adminnavprofile").append(postHtml);
+        }
+        else {
+            window.location.assign("http://localhost:8085/index.html")
+        }
+
+        // Logout
+        $("#Logout").click(function () {
+            window.localStorage.clear();
+            window.location.assign("http://localhost:8085/login.html");
+        });
+
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+
+        $(document).ready(function () {
+            $("#mAdd").click(function () {
+                var token = localStorage.getItem('token');
+                var title = $('#titles').val();
+                var description = $('#mdescription').val();
+                var cast = $('#cast').val();
+                var time = $('#time').val();
+                var opening_date = $('#opening_date').val();
+                var genres = $('#genres').val();
+                var allGenres = genres.split(",");
+                var reqBody = JSON.stringify({ title: title, description: description, cast: cast, time: time, opening_date: opening_date, genres: genres })
+
+                // Link Endpoint 6
+                $.ajax({
+                    url: "http://localhost:8084/genre/",
+                    type: "GET",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (data, textStatus, xhr) {
+                        datajson = JSON.parse(data.Genres)
+                        var count = 0;
+                        if (data != null) {
+                            for (var a = 0; a < datajson.length; a++) {
+                                for (var b = 0; b < allGenres.length; b++) {
+                                    if (allGenres[b].toLowerCase() == datajson[a].genre.toLowerCase()) {
+                                        count += 1;
+                                    }
+                                }
+                            }
+                            if (count == allGenres.length) {
+                                // Link Endpoint 7
+                                $.ajax({
+                                    headers: { 'authorization': 'Bearer ' + token },
+                                    url: 'http://localhost:8084/movie/',
+                                    type: 'POST',
+                                    data: reqBody,
+                                    contentType: "application/json; charset=utf-8",
+                                    dataType: 'json',
+                                    success: function (data2, textStatus, xhr) {
+                                        document.getElementById('titles').value = "";
+                                        document.getElementById('mdescription').value = "";
+                                        document.getElementById('cast').value = "";
+                                        document.getElementById('time').value = "";
+                                        document.getElementById('opening_date').value = "";
+                                        document.getElementById('genres').value = ""
+                                        $('#msg').html('Movie Successfully Added!');
+                                    },
+                                    error: function (xhr, textStatus, err) {
+                                        console.log(err);
+                                        document.getElementById('titles').value = "";
+                                        document.getElementById('mdescription').value = "";
+                                        document.getElementById('cast').value = "";
+                                        document.getElementById('time').value = "";
+                                        document.getElementById('opening_date').value = "";
+                                        document.getElementById('genres').value = ""
+                                        $('#msg').html('Movie Upload Failed!');
+                                        if (err == "Forbidden") {
+                                            window.alert("Please re-login!");
+                                            localStorage.clear();
+                                            window.location.assign("http://localhost:8085/index.html");
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                $('#msg').html('Please Enter Valid Genre(s)!');
+                            }
+                        }
+                        else {
+                            console.log("Issue in retrieving...");
+                        }
+                    },
+                    error: function (xhr, textStatus, err) {
+                        console.log(err);
+                        window.alert("Please re-login!");
+                        localStorage.clear();
+                        window.location.assign("http://localhost:8085/index.html");
+                    }
+                });
+            });
+        });
+
+        // Link Endpoint 5
+        $(document).ready(function () {
+            $("#gAdd").click(function () {
+                var genre = $('#genre').val();
+                var description = $('#gdescription').val();
+                var token = localStorage.getItem('token');
+                var reqBody = JSON.stringify({ genre: genre, description: description })
+                $.ajax({
+                    headers: { 'authorization': 'Bearer ' + token },
+                    url: 'http://localhost:8084/genre/',
+                    type: 'POST',
+                    data: reqBody,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    success: function (data, textStatus, xhr) {
+                        if (data != null && data.success == true) {
+                            $('#msg').html('Genre Successfully Added!');
+                            document.getElementById('genre').value = "";
+                            document.getElementById('gdescription').value = "";
+                        } else {
+                            console.log("Error");
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        document.getElementById('genre').value = "";
+                        document.getElementById('gdescription').value = "";
+                        $('#msg').html('Genre Upload Failed!');
+                        if (errorThrown == "Forbidden") {
+                            window.alert("Please re-login!");
+                            localStorage.clear();
+                            window.location.assign("http://localhost:8085/index.html");
+                        }
+                    }
+                });
+            });
+        });
+
+        // Link Endpoint 20
+        $(document).ready(function () {
+            $("#iAdd").click(function () {
+                var title = $('#moviename').val();
+                var imagefield = $('#myFile').val();
+                console.log(imagefield)
+                if (title.length == 0) {
+                    document.getElementById('moviename').value = "";
+                    $('#msg').html('Please Fill In Movie Title For Add Image!');
+                } else if (imagefield.length == 0) {
+                    $('#msg').html('Please Add Image to Upload!');
+                }
+                else {
+                    var token = localStorage.getItem('token');
+                    var formdata = new FormData();
+                    formdata.append('image', $('#myFile')[0].files[0]);
+                    $.ajax({
+                        url: 'http://localhost:8084/allmovie/addimage',
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        success: function (data, textStatus, xhr) {
+                            if (data != null) {
+                                console.log(data)
+                                for (var a = 0; a < data.length; a++) {
+                                    if (data[a].title.toLowerCase() == title.toLowerCase()) {
+                                        // Link Endpoint 17
+                                        $.ajax({
+                                            headers: { 'authorization': 'Bearer ' + token },
+                                            url: 'http://localhost:8084/movie/upload/' + data[a].movieid,
+                                            type: 'POST',
+                                            data: formdata,
+                                            contentType: false,
+                                            processData: false,
+                                            success: function (data, textStatus, xhr) {
+                                                if (data != null) {
+                                                    console.log(data)
+                                                    $('#msg').html('Image inserted successfully!');
+                                                    document.getElementById('moviename').value = "";
+                                                } else {
+                                                    console.log("Error");
+                                                }
+                                            },
+                                            error: function (xhr, textStatus, errorThrown) {
+                                                console.log('Error in Operation');
+                                                if (errorThrown == "Forbidden") {
+                                                        window.alert("Please re-login!");
+                                                        localStorage.clear();
+                                                        window.location.assign("http://localhost:8085/index.html");
+                                                    }
+                                                else if (errorThrown == "Payload Too Large") {
+                                                    $('#msg').html('Image Size Too Big!');
+                                                    document.getElementById('moviename').value = "";
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            } else {
+                                console.log("Error");
+                            }
+                        },
+                        error: function (xhr, textStatus, errorThrown) {
+                            console.log('Error in Operation');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

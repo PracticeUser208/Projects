@@ -1,0 +1,130 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/index.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active"><a href="search.html">Search Movie</a></li>
+                <li class="active" id="add"></li>
+                <li class="active" id="allUsers"></li>
+                <li class="active" id="logButton"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h1>Welcome To SP Movies System</h1>
+        <div id="movieInfo"></div>
+    </div>
+
+    <script>
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+
+        // Display Login or Logout
+        var token = localStorage.getItem("token");
+        var postHtml = "";
+        if (token == null) {
+            postHtml = `<a href="login.html">Login</a>`
+        } else {
+            postHtml = `<a href="profile.html">Profile</a>`
+        }
+        $("#logButton").append(postHtml);
+
+        // Admin Privileges
+        var userData = localStorage.getItem('userInfo');
+        if (userData != null) {
+            var userJsonData = JSON.parse(userData);
+            var usertype = userJsonData[0].type;
+            if (usertype == "Admin") {
+                var postHtml = "";
+                postHtml = `<a href="addMovieORGenre.html">Add Movie / Genre</a>`
+                $("#add").append(postHtml);
+                postHtml = "";
+                postHtml = `<a href="users.html">View All Users</a>`
+                $("#allUsers").append(postHtml);
+            }
+        }
+
+        // Link Endpoint 8
+        $.ajax({
+            url: "http://localhost:8084/movie/",
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data, textStatus, xhr) {
+                if (data != null) {
+                    // Link Endpoint 18
+                    $.ajax({
+                        url: "http://localhost:8084/movie/upload/",
+                        type: "GET",
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (image_path, textStatus, xhr) {
+                            console.log(image_path, textStatus, xhr)
+                            if (image_path != null) {
+                                for (var a = 0; a < data.length; a++) {
+                                    for (var b = 0; b < image_path.length; b++) {
+                                        if (data[a].movieid == image_path[b].movie_id) {
+                                            var image_full_path = "http://localhost:8084" + image_path[b].image_path;
+                                            postHtml = `
+                                            <div class="card">
+                                                <div class="col-sm-6">
+                                                    <img src="${image_full_path}" width="330px" height="450px">
+                                                    <p class="card-text" style="background-color:Beige">
+                                                        Title: ${data[a].title}<br/>
+                                                        Rating: ${data[a].Average.toFixed(2)} out of ${data[a].ReviewCount} review(s)<br/>
+                                                        <a href="viewMovieDetails.html?movieid=${data[a].movieid}" class="btn btn-primary" class="View">Details</a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            `;
+                                            $("#movieInfo").append(postHtml);
+                                        }
+                                    }
+                                }
+                            } else {
+                                console.log("Issue in retrieving...");
+                            }
+                        },
+                        error: function (xhr, textStatus, err) {
+                            console.log(err);
+                        }
+                    })
+                } else {
+                    console.log("Issue in retrieving...");
+                }
+            },
+            error: function (xhr, textStatus, err) {
+                console.log(err);
+            }
+        });
+    </script>
+</body>
+
+</html>

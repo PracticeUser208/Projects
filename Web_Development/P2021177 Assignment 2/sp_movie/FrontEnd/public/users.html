@@ -1,0 +1,97 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/index.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active"><a href="search.html">Search Movie</a></li>
+                <li class="active" id="add"></li>
+                <li class="active" id="allUsers"></li>
+                <li class="active" id="logButton"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="displayUsers"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+
+        // Display Login or Logout
+        var token = localStorage.getItem("token");
+        var postHtml = "";
+        if (token == null) {
+            postHtml = `<a href="login.html">Login</a>`
+        } else {
+            postHtml = `<a href="profile.html">Profile</a>`
+        }
+        $("#logButton").append(postHtml);
+
+        // Admin Privileges
+        var userData = localStorage.getItem('Users');
+        var userRole = localStorage.getItem('userInfo');
+        var userJsonData = JSON.parse(userData);
+        var userroleJsonData = JSON.parse(userRole);
+        if (userroleJsonData != null && userroleJsonData[0].type == "Admin") {
+            for (var a = 0; a < userJsonData.length; a++) {
+                var postHtml = "";
+                postHtml = `
+                    <div class="row" style="background-color:Beige; margin:5px;">
+                        <div class="col-xs-6 col-sm-9">
+                            <h4>${userJsonData[a].username}</h4>
+                        </div>
+                        <div class="col-xs-6 col-sm-3" style="padding-top:3px">
+                            <div class="text-right">
+                                <a href="othersProfile.html?userid=${userJsonData[a].userid}" class="btn btn-primary" class="View">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                $("#displayUsers").append(postHtml);
+            }
+            var postHtml = "";
+            postHtml = `<a href="addMovieORGenre.html">Add Movie / Genre</a>`
+            $("#add").append(postHtml);
+            postHtml = "";
+            postHtml = `<a href="users.html">View All Users</a>`
+            $("#allUsers").append(postHtml);
+        }
+        else {
+            window.location.assign("http://localhost:8085/index.html");
+        }
+    </script>
+</body>
+
+</html>

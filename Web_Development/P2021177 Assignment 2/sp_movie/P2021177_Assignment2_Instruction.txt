@@ -1,0 +1,4 @@
+1) Open up one VSC terminal and select the folder name P2021177 Assignment 2/sp_movie/FrontEnd
+2) Open up one VSC terminal and select the folder name P2021177 Assignment 2/sp_movie/BackEnd
+3) Run the command nodemon server.js on both the VSC terminal
+4) Access the movie webpage by entering localhost:8085 in the url

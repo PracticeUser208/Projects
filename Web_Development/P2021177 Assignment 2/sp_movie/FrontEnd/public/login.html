@@ -1,0 +1,96 @@
+<!-- Name: Brenden Tung Jian Hui
+Admission No.: 2021177
+Class: DISM/FT/2B/22 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/login.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SP Movies</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li class="active"><a href="search.html">Search Movie</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="login-form">
+        <form action="">
+            <h2 class="text-center">Login</h2>
+            <div class="form-group">
+                <input type="text" class="form-control" id="username" placeholder="Username" required="required">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="pwd" placeholder="Password" required="required">
+            </div>
+            <p><span id="msg"></span></p>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block" id="Login">Login</button>
+            </div>
+            <div class="clearfix">
+                <label class="pull-left checkbox-inline"><input type="checkbox"> Remember me</label>
+                <a href="#" class="pull-right">Forgot Password?</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Login
+        $(document).ready(function () {
+            $("#Login").click(function () {
+                var usr = $('#username').val();
+                var pwd = $('#pwd').val();
+                var reqBody = JSON.stringify({ username: usr, password: pwd })
+                $.ajax({
+                    url: 'http://localhost:8084/users/login',
+                    type: 'POST',
+                    data: reqBody,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (reqBody, textStatus, xhr) {
+                        if (reqBody != null) {
+                            localStorage.setItem('token', reqBody.token);
+                            localStorage.setItem('userInfo', reqBody.UserData);
+                            window.location.assign("http://localhost:8085/profile.html");
+                        } else {
+                            console.log("Error");
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log('Error in Operation');
+                        $('#msg').html('Invalid Username OR Password!');
+                        document.getElementById('username').value = "";
+                        document.getElementById('pwd').value = "";
+                    }
+                });
+                return false;
+            });
+        });
+
+        // Search Function
+        $(document).ready(function () {
+            $("#Search").click(function () {
+                var search = $("#title").val();
+                localStorage.setItem("Search", search);
+                window.location.assign("http://localhost:8085/search.html");
+            });
+        });
+    </script>
+</body>
+
+</html>
