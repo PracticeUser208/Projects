@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "SeatBookingSimulator/1.0.0": {
+        "runtime": {
+          "SeatBookingSimulator.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SeatBookingSimulator/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
